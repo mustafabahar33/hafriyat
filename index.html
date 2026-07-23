@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serkan Hafriyat | Mersin Toroslar</title>
+    
+    <!-- Google Fonts ve FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- TEMA AYARLARI --- */
+        :root {
+            --ana-renk: #080808;      /* Zift Siyahı */
+            --ikinci-renk: #121212;   /* Koyu Karbon */
+            --vurgu: #FFB300;         /* İş Makinesi Sarısı / Altın */
+            --vurgu-koyu: #CC8F00;
+            --metin: #E0E0E0;
+            --beyaz: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        ::selection {
+            background-color: var(--vurgu);
+            color: var(--ana-renk);
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--ana-renk);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--vurgu-koyu);
+            border-radius: 6px;
+            border: 3px solid var(--ana-renk);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--vurgu);
+        }
+
+        body.loading {
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--ana-renk);
+            color: var(--metin);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .logo {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- PALETLERİ DÖNEN KEPÇE LOADER EKRANI --- */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--ana-renk);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+        }
+
+        .loader-content {
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .kepce-svg {
+            width: 170px;
+            height: auto;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 10px rgba(255, 179, 0, 0.2));
+        }
+
+        .excavator-body {
+            animation: kepce-titre 0.4s alternate infinite ease-in-out;
+        }
+        @keyframes kepce-titre {
+            from { transform: translateY(0px); }
+            to { transform: translateY(2px); }
+        }
+
+        /* Çarkların (Dişlilerin) doğrudan kendi merkezlerinde dönmesi için düzeltildi */
+        .spin-wheel {
+            animation: tekerlek-don 1.5s linear infinite;
+        }
+        @keyframes tekerlek-don {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .track-belt {
+            animation: move-belt 1s linear infinite;
+        }
+        @keyframes move-belt {
+            to { stroke-dashoffset: -24; } 
+        }
+
+        .progress-box {
+            width: 100%;
+            height: 12px;
+            background-color: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #444;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--vurgu-koyu), var(--vurgu));
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--vurgu);
+        }
+
+        .loader-text {
+            margin-top: 15px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2rem;
+            color: var(--beyaz);
+            letter-spacing: 2px;
+        }
+
+        /* --- Animasyon Sınıfları --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 0.9s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- CAM EFEKTLİ HEADER --- */
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            padding: 25px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            z-index: 1000;
+            transition: all 0.5s ease;
+        }
+
+        header.scrolled {
+            padding: 12px 5%;
+            background: rgba(8, 8, 8, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 179, 0, 0.15);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            color: var(--beyaz);
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-weight: 700;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .logo span { color: var(--vurgu); }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 35px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--beyaz);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+            transition: color 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 3px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--vurgu);
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            border-radius: 2px;
+        }
+
+        nav ul li a:hover { color: var(--vurgu); }
+        nav ul li a:hover::after { width: 100%; }
+
+        /* --- HERO SECTION & TOZ EFEKTİ --- */
+        .hero {
+            height: 100vh;
+            position: relative;
+            background-image: linear-gradient(90deg, rgba(8,8,8,0.95) 0%, rgba(8,8,8,0.6) 100%), url('https://images.unsplash.com/photo-1541888081622-df8b10bbbdcb?auto=format&fit=crop&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10%;
+            overflow: hidden;
+        }
+
+        .dust {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 179, 0, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 179, 0, 0.8);
+            animation: float-dust 10s infinite linear;
+            z-index: 0;
+        }
+
+        @keyframes float-dust {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 5.5vw;
+            color: var(--beyaz);
+            line-height: 1.1;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 15px rgba(0,0,0,0.8);
+        }
+
+        .hero h1 span { color: var(--vurgu); }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 650px;
+            margin-bottom: 45px;
+            line-height: 1.7;
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 45px;
+            background: linear-gradient(45deg, var(--vurgu-koyu), var(--vurgu));
+            color: var(--ana-renk);
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-decoration: none;
+            border-radius: 3px;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(255, 179, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 179, 0, 0.5);
+            background: linear-gradient(45deg, var(--vurgu), #FFC107);
+        }
+
+        /* --- ORTAK BAŞLIK --- */
+        .section-title {
+            text-align: center;
+            font-size: 3.5rem;
+            color: var(--beyaz);
+            margin-bottom: 70px;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background-color: var(--vurgu);
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* --- HİZMETLER --- */
+        .services {
+            padding: 120px 5%;
+            background-color: var(--ikinci-renk);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            background-color: var(--ana-renk);
+            padding: 60px 40px;
+            border-top: 5px solid var(--vurgu);
+            transition: all 0.5s ease;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .service-card i {
+            font-size: 55px;
+            color: var(--vurgu);
+            margin-bottom: 25px;
+            transition: transform 0.5s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9);
+        }
+
+        .service-card:hover i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .service-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        /* --- İSTATİSTİKLER --- */
+        .stats {
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1504307651254-35680f356f58?auto=format&fit=crop&q=80') center/cover fixed;
+            padding: 80px 5%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            text-align: center;
+            border-top: 3px solid var(--vurgu);
+            border-bottom: 3px solid var(--vurgu);
+        }
+
+        .stat-item i {
+            font-size: 50px;
+            color: var(--vurgu);
+            margin-bottom: 15px;
+        }
+
+        .stat-item h3 {
+            font-size: 4rem;
+            color: var(--beyaz);
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #aaa;
+        }
+
+        /* --- ARAÇ PARKIMIZ --- */
+        .fleet {
+            padding: 120px 5%;
+            background-color: var(--ana-renk);
+        }
+
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            max-width: 1000px; 
+            margin: 0 auto;
+        }
+
+        .fleet-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .fleet-item img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: transform 0.8s ease, filter 0.8s ease;
+            filter: grayscale(80%) brightness(0.6);
+            display: block;
+        }
+
+        .fleet-item:hover img {
+            transform: scale(1.1);
+            filter: grayscale(0%) brightness(1);
+        }
+
+        .fleet-info {
+            position: absolute;
+            bottom: -120px;
+            left: 0;
+            width: 100%;
+            padding: 25px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.95));
+            transition: bottom 0.4s ease;
+            text-align: center;
+        }
+
+        .fleet-item:hover .fleet-info {
+            bottom: 0; 
+        }
+
+        .fleet-info h3 {
+            color: var(--vurgu);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,1);
+        }
+
+        /* --- FOOTER / İLETİŞİM --- */
+        footer {
+            background-color: #030303;
+            padding: 100px 5% 40px;
+            border-top: 1px solid rgba(255, 179, 0, 0.2);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 60px;
+            max-width: 1300px;
+            margin: 0 auto 50px;
+        }
+
+        .footer-col h4 {
+            color: var(--beyaz);
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: 0;
+            width: 40px; height: 3px;
+            background-color: var(--vurgu);
+        }
+
+        .footer-col p {
+            color: #888;
+            line-height: 2;
+            margin-bottom: 15px;
+        }
+
+        .footer-col i {
+            color: var(--vurgu);
+            width: 25px;
+            font-size: 1.2rem;
+        }
+
+        .copyright {
+            text-align: center;
+            color: #444;
+            padding-top: 30px;
+            border-top: 1px solid #111;
+            font-size: 0.9rem;
+        }
+
+        /* Butonlar */
+        .float-btns {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .action-btn {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wp-btn { background-color: #25D366; }
+        .up-btn { background-color: var(--ana-renk); border: 2px solid var(--vurgu); color: var(--vurgu); opacity: 0; pointer-events: none; }
+        .up-btn.show { opacity: 1; pointer-events: all; }
+
+        .action-btn:hover { transform: scale(1.15) rotate(5deg); }
+
+        /* --- MOBİL UYUMLULUK --- */
+        @media (max-width: 768px) {
+            header { 
+                flex-direction: column; 
+                padding: 15px; 
+                background: var(--ana-renk); 
+            }
+            nav ul { 
+                margin-top: 15px; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                gap: 10px; 
+            }
+            
+            .hero { 
+                padding-top: 160px;
+                text-align: center; 
+            }
+            
+            .hero h1 { font-size: 3.2rem; }
+            .section-title { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body class="loading">
+
+    <!-- PALETLERİ DÖNEN EKSKAVATÖR LOADER (ÇARKLARI TAM MERKEZDE SABİTLENDİ) -->
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            
+            <svg class="kepce-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                
+                <!-- Kepçe Üst Gövde (Titreyen Kısım) -->
+                <g class="excavator-body">
+                    <path d="M 85,65 L 140,25 L 175,70" fill="none" stroke="#FFB300" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M 165,65 L 185,60 L 195,95 L 175,100 Z" fill="#222"/>
+                    <path d="M 195,95 L 202,91" stroke="#222" stroke-width="4"/>
+                    <path d="M 189,97 L 196,104" stroke="#222" stroke-width="4"/>
+                    <path d="M 179,100 L 186,107" stroke="#222" stroke-width="4"/>
+                    <path d="M 35,80 L 35,45 L 95,45 L 105,80 Z" fill="#FFB300"/>
+                    <path d="M 40,45 L 40,15 L 75,15 L 85,45 Z" fill="#151515"/>
+                    <polygon points="45,20 70,20 77,40 45,40" fill="#333"/>
+                </g>
+                
+                <!-- Alt Takım ve Palet Sistemi -->
+                <g class="excavator-tracks">
+                    <!-- Palet İç Şasisi -->
+                    <rect x="20" y="82" width="110" height="26" rx="13" fill="#111"/>
+                    
+                    <!-- ÇÖZÜM: Çarklara doğrudan merkez (cx, cy) noktaları transform-origin olarak verildi -->
+                    <circle class="spin-wheel" cx="33" cy="95" r="8" fill="#222" stroke="#FFB300" stroke-width="1.5" stroke-dasharray="4 2" style="transform-origin: 33px 95px;"/>
+                    <circle class="spin-wheel" cx="61" cy="95" r="8" fill="#222" stroke="#FFB300" stroke-width="1.5" stroke-dasharray="4 2" style="transform-origin: 61px 95px;"/>
+                    <circle class="spin-wheel" cx="89" cy="95" r="8" fill="#222" stroke="#FFB300" stroke-width="1.5" stroke-dasharray="4 2" style="transform-origin: 89px 95px;"/>
+                    <circle class="spin-wheel" cx="117" cy="95" r="8" fill="#222" stroke="#FFB300" stroke-width="1.5" stroke-dasharray="4 2" style="transform-origin: 117px 95px;"/>
+
+                    <!-- Dönen Tırtıl Kayışı -->
+                    <rect x="20" y="82" width="110" height="26" rx="13" fill="none" stroke="#555" stroke-width="5" stroke-dasharray="8 4" class="track-belt"/>
+                </g>
+            </svg>
+
+            <div class="progress-box">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="loader-text" id="loader-text">%0 HAZIRLANIYOR...</div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header id="header">
+        <a href="#" class="logo">SERKAN <span>HAFRİYAT</span></a>
+        <nav>
+            <ul>
+                <li><a href="#hero">ANA SAYFA</a></li>
+                <li><a href="#hizmetler">HİZMETLER</a></li>
+                <li><a href="#filo">İŞ MAKİNELERİMİZ</a></li>
+                <li><a href="#iletisim">İLETİŞİM</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <div id="dust-container"></div>
+        <div class="hero-content">
+            <h1 class="reveal">Sağlam Temel,<br><span>Temiz İşçilik.</span></h1>
+            <p class="reveal">Mersin Toroslar merkezli firmamızda, patronumuz Serkan Yörük'ün liderliğinde bizzat işin başında durarak hafriyat, kırım ve nakliyat işlemlerinize güvenilir çözümler sunuyoruz.</p>
+            <div class="reveal">
+                <a href="#iletisim" class="btn">ÜCRETSİZ KEŞİF İSTEYİN <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- HİZMETLER -->
+    <section class="services" id="hizmetler">
+        <h2 class="section-title reveal">HİZMET ALANLARIMIZ</h2>
+        <div class="services-grid">
+            <div class="service-card reveal">
+                <i class="fa-solid fa-trowel-bricks"></i>
+                <h3>TEMEL KAZI İŞLERİ</h3>
+                <p>Güçlü Hidromek iş makinemizle projelerinize tam uyumlu, titiz ve güvenli temel ve altyapı kazıları gerçekleştiriyoruz.</p>
+            </div>
+            <div class="service-card reveal" style="transition-delay: 0.2s;">
+                <i class="fa-solid fa-building-circle-exclamation"></i>
+                <h3>KIRIM VE YIKIM</h3>
+                <p>Çevre güvenliğini her şeyin önünde tutarak, bizzat işin başında durduğumuz kontrollü kırım ve yıkım çalışmaları.</p>
+            </div>
+            <div class="service-card reveal" style="transition-delay: 0.4s;">
+                <i class="fa-solid fa-truck-fast"></i>
+                <h3>MOLOZ NAKLİYAT</h3>
+                <p>BMC hafriyat kamyonumuz ile şantiye atıklarını ve molozları çevre kurallarına uygun olarak döküm sahasına taşıyoruz.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- İSTATİSTİKLER -->
+    <section class="stats reveal" id="stats">
+        <div class="stat-item">
+            <i class="fa-solid fa-calendar-check"></i>
+            <h3 class="counter" data-target="15">0</h3>
+            <p>YILLIK SEKTÖR TECRÜBESİ</p>
+        </div>
+        <div class="stat-item">
+            <i class="fa-solid fa-snowplow"></i>
+            <h3 class="counter" data-target="2">0</h3>
+            <p>GÜÇLÜ İŞ MAKİNESİ</p>
+        </div>
+        <div class="stat-item">
+            <i class="fa-solid fa-handshake"></i>
+            <h3 class="counter" data-target="100">0</h3>
+            <p>% MÜŞTERİ MEMNUNİYETİ</p>
+        </div>
+    </section>
+
+    <!-- ARAÇ PARKIMIZ -->
+    <section class="fleet" id="filo">
+        <h2 class="section-title reveal">İŞ MAKİNELERİMİZ</h2>
+        <div class="fleet-grid">
+            <div class="fleet-item reveal">
+                <img src="https://ozelegitimim.com/resimlerim/kepcemiz.png" alt="Hidromek Kepçe">
+                <div class="fleet-info">
+                    <h3>HİDROMEK KEPÇE</h3>
+                    <p>Kazı, kırım ve tesviye işlerinde üstün performanslı iş makinemiz.</p>
+                </div>
+            </div>
+            <div class="fleet-item reveal" style="transition-delay: 0.2s;">
+                <img src="https://ozelegitimim.com/resimlerim/kamyonumuz.png" alt="BMC Hafriyat Kamyonu">
+                <div class="fleet-info">
+                    <h3>BMC HAFRİYAT KAMYONU</h3>
+                    <p>Moloz ve hafriyat transferinde güvenilir nakliye gücümüz.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER / İLETİŞİM -->
+    <footer id="iletisim">
+        <div class="footer-grid">
+            <div class="footer-col reveal">
+                <h4>SERKAN HAFRİYAT</h4>
+                <p>Kurucumuz Serkan Yörük yönetiminde, Mersin Toroslar'da yılların verdiği tecrübeyle özenli ve güvenilir hafriyat hizmeti veriyoruz. İşimiz, gücümüz, dürüstlüğümüz.</p>
+            </div>
+            <div class="footer-col reveal" style="transition-delay: 0.2s;">
+                <h4>İLETİŞİM BİLGİLERİ</h4>
+                <p><i class="fa-solid fa-location-dot"></i> Toroslar, Mersin, Türkiye</p>
+                <p><i class="fa-solid fa-phone-flip"></i> +90 533 470 75 67</p>
+            </div>
+            <div class="footer-col reveal" style="transition-delay: 0.4s;">
+                <h4>ÇALIŞMA SAATLERİ</h4>
+                <p><i class="fa-regular fa-clock"></i> Pazartesi - Cumartesi: 08:00 - 18:00</p>
+                <p><i class="fa-regular fa-clock"></i> Pazar: Kapalı</p>
+                <p><i class="fa-brands fa-whatsapp"></i> WhatsApp'tan 7/24 Ulaşabilirsiniz</p>
+            </div>
+        </div>
+        <div class="copyright reveal">
+            &copy; 2026 Serkan Hafriyat. Tüm Hakları Saklıdır.
+        </div>
+    </footer>
+
+    <div class="float-btns">
+        <a href="#" class="action-btn up-btn" id="upBtn" title="Yukarı Çık"><i class="fa-solid fa-chevron-up"></i></a>
+        <a href="https://wa.me/905334707567" class="action-btn wp-btn" target="_blank" title="WhatsApp Destek Hattı"><i class="fa-brands fa-whatsapp"></i></a>
+    </div>
+
+    <!-- JAVASCRIPT KODLARI -->
+    <script>
+        // LOADER
+        window.addEventListener("DOMContentLoaded", () => {
+            const progressBar = document.getElementById("progress-bar");
+            const loaderText = document.getElementById("loader-text");
+            const loaderWrapper = document.getElementById("loader-wrapper");
+            
+            let loadValue = 0;
+            const loadInterval = setInterval(() => {
+                loadValue += Math.floor(Math.random() * 12) + 2;
+                if (loadValue >= 100) {
+                    loadValue = 100;
+                    clearInterval(loadInterval);
+                    loaderText.textContent = "%100 HAZIR!";
+                    
+                    setTimeout(() => {
+                        loaderWrapper.style.opacity = "0";
+                        loaderWrapper.style.visibility = "hidden";
+                        document.body.classList.remove("loading");
+                        reveal(); 
+                        startCounters(); 
+                    }, 800);
+                }
+                progressBar.style.width = loadValue + "%";
+                if(loadValue < 100) loaderText.textContent = "%" + loadValue + " HAZIRLANIYOR...";
+            }, 120);
+        });
+
+        // HERO TOZ EFEKTİ
+        const dustContainer = document.getElementById('dust-container');
+        for (let i = 0; i < 30; i++) {
+            let dust = document.createElement('div');
+            dust.className = 'dust';
+            dust.style.left = Math.random() * 100 + 'vw';
+            dust.style.animationDuration = (Math.random() * 10 + 5) + 's';
+            dust.style.animationDelay = (Math.random() * 5) + 's';
+            dustContainer.appendChild(dust);
+        }
+
+        // SCROLL REVEAL 
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                if (elementTop < windowHeight - 50) reveals[i].classList.add("active");
+            }
+        }
+        window.addEventListener("scroll", reveal);
+
+        // HEADER & YUKARI ÇIK
+        window.addEventListener("scroll", function() {
+            var header = document.getElementById("header");
+            var upBtn = document.getElementById("upBtn");
+            if(window.scrollY > 80) {
+                header.classList.add("scrolled");
+                upBtn.classList.add("show");
+            } else {
+                header.classList.remove("scrolled");
+                upBtn.classList.remove("show");
+            }
+        });
+
+        // DİNAMİK İSTATİSTİK
+        let counted = false;
+        function startCounters() {
+            const counters = document.querySelectorAll('.counter');
+            const speed = 100; 
+
+            window.addEventListener('scroll', () => {
+                const statsSection = document.getElementById('stats');
+                if(!statsSection) return;
+                const sectionTop = statsSection.getBoundingClientRect().top;
+                
+                if (sectionTop < window.innerHeight && !counted) {
+                    counters.forEach(counter => {
+                        const target = +counter.getAttribute('data-target');
+                        const updateCount = () => {
+                            const count = +counter.innerText;
+                            const inc = target / speed;
+                            if (count < target) {
+                                counter.innerText = Math.ceil(count + inc);
+                                setTimeout(updateCount, 20);
+                            } else {
+                                counter.innerText = target === 100 ? target : target + "+";
+                            }
+                        };
+                        updateCount();
+                    });
+                    counted = true;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
